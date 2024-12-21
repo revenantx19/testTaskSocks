@@ -1,6 +1,11 @@
 package com.sockscontrol.warehouse.controller;
 
+import com.sockscontrol.warehouse.dto.SocksDto;
 import com.sockscontrol.warehouse.entity.Socks;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,7 +27,13 @@ public class SocksController {
      * Увеличивает количество носков на складе.
      */
     @PostMapping(path = "/api/socks/income")
-    public ResponseEntity<?> regSocksIncome(@RequestBody Socks socks) {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = {
+                    @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Socks.class))
+            }),
+    })
+    public ResponseEntity<?> regSocksIncome(@RequestPart("socks") Socks socks) {
         return socksService.regSocksIncome(socks);
     }
     /**
@@ -57,7 +68,7 @@ public class SocksController {
      * Позволяет изменить параметры носков (цвет, процент хлопка, количество).
      */
     @PatchMapping(path = "/api/socks/{id}")
-    public ResponseEntity<?> updateSocksData(@PathVariable("id") Integer id,
+    public ResponseEntity<?> updateSocksData(@PathVariable Integer id,
                                              @RequestParam(required = false) String color,
                                              @RequestParam(required = false) Integer cottonPart,
                                              @RequestParam(required = false) Integer count) {
