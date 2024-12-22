@@ -15,4 +15,7 @@ public class SocksNotFoundException extends RuntimeException {
                 "\nСодержание хлопка " + cottonPart);
     }
 
+    public SocksNotFoundException() {
+        super("Запрашиваемая строка отсутствует в БД");
+    }
 }

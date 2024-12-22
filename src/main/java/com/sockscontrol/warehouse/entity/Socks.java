@@ -37,4 +37,10 @@ public class Socks {
     public Socks() {
 
     }
+
+    public Socks(String color, int cottonPart, int count) {
+        this.color = color;
+        this.cottonPart = cottonPart;
+        this.count = count;
+    }
 }

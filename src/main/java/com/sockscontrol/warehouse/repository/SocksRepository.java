@@ -37,4 +37,21 @@ public interface SocksRepository extends JpaRepository<Socks, Long> {
 
     @Query(value = "SELECT SUM(count) FROM socks WHERE color = :color AND cotton_part > :cottonPart", nativeQuery = true)
     int findCountOfSocksMoreThan(String color, Integer cottonPart);
+
+    @Query(value = "SELECT SUM(count) FROM socks WHERE color = :color AND cotton_part < :cottonPart", nativeQuery = true)
+    int findCountOfSocksLessThan(String color, Integer cottonPart);
+
+    @Query(value = "SELECT count FROM socks WHERE color = :color AND cotton_part = :cottonPart", nativeQuery = true)
+    int findCountOfCocksByColorAndCottonPart(String color, Integer cottonPart);
+
+    @Query(value = "SELECT EXISTS (SELECT 1 FROM socks WHERE id = :id)", nativeQuery = true)
+    boolean existsBySocksId(Integer id);
+
+    @Query(value = "SELECT 1 FROM socks WHERE id = :id", nativeQuery = true)
+    Socks findSockById(Long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE socks SET color = :color, cotton_part = :cottonPart, count = :count WHERE id = :id", nativeQuery = true)
+    void updateSocksData(Integer id, String color, Integer cottonPart, Integer count);
 }

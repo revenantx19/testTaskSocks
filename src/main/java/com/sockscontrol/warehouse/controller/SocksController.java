@@ -40,7 +40,7 @@ public class SocksController {
                             schema = @Schema(implementation = Socks.class))
             }),
     })
-    public ResponseEntity<HttpStatus> regSocksIncome(@Valid @RequestBody Socks socks) {
+    public ResponseEntity<?> regSocksIncome(@Valid @RequestBody Socks socks) {
         log.info("Вход в метод regSocksIncome класса SocksController");
         socksService.regSocksIncome(socks);
         return ResponseEntity.ok(HttpStatus.OK);
@@ -70,11 +70,9 @@ public class SocksController {
     public Integer getCountOfSocks(@RequestParam(required = false) String color,
                                    @RequestParam(required = false) Integer cottonPart,
                                    @Parameter(description = "Оператор сравнения. Напишите только один символ, без посторонних знаков.", example = ">, <, =")
-                                   @RequestParam(required = false) String comparison,
-                                   @Parameter(description = "Число относительно которого осуществляется сравнение.")
-                                   @RequestParam(required = false) Integer number) throws InvalidInputException {
-
-        return socksService.getCountOfSocks(color, cottonPart, comparison, number);
+                                   @RequestParam(required = false) String comparison) throws InvalidInputException {
+        log.info("Вход в метод getCountOfSocks класса SocksController");
+        return socksService.getCountOfSocks(color, cottonPart, comparison);
     }
 
     /**
@@ -84,10 +82,12 @@ public class SocksController {
      */
     @PatchMapping(path = "/api/socks/{id}")
     public ResponseEntity<?> updateSocksData(@PathVariable Integer id,
-                                             @RequestParam(required = false) String color,
-                                             @RequestParam(required = false) Integer cottonPart,
-                                             @RequestParam(required = false) Integer count) {
-        return socksService.updateSocksData();
+                                             @RequestParam String color,
+                                             @RequestParam Integer cottonPart,
+                                             @RequestParam Integer count) {
+        log.info("Вход в метод updateSocksData класса SocksController");
+        socksService.updateSocksData(id, color, cottonPart, count);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     /**
@@ -95,9 +95,10 @@ public class SocksController {
      * POST /api/socks/batch
      * Принимает Excel или CSV (один формат на выбор) файл с партиями носков, содержащими цвет, процентное содержание хлопка и количество.
      */
-    @PostMapping(path = "/api/socks/batch")
-    public Integer uploadFile(@RequestPart(required = false) MultipartFile excelFile) {
-        return socksService.uploadFile();
+    @PatchMapping(path = "/api/socks/batch", consumes = "multipart/form-data")
+    public ResponseEntity<?> uploadFile(@RequestPart MultipartFile excelFile) {
+        log.info("Вход в метод uploadFile класса SocksController");
+        return socksService.uploadDataFromExcelFile(excelFile);
     }
 
     /**
