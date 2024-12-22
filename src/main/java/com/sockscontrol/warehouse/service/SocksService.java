@@ -44,14 +44,21 @@ public class SocksService {
     public void regSocksOutcome(Socks socks) {
         //нужна проверка существования такого количества носков
         log.info("Вход в метод regSocksOutcome класса SocksService. Начинаем проверку наличия данной строки в БД");
-        if (socksRepository.socksExistsByColorAndCottonPart(socks.getColor(),
-                socks.getCottonPart())) {
-            socksRepository.reduceSocksByColorAndCottonPart(socks.getColor(),
-                    socks.getCottonPart(),
-                    socks.getCount());
-            log.info("Данные успешно обновлены (уменьшено количество носков)");
-        } else {
-            throw new SocksNotFoundException(socks.getColor(), socks.getCottonPart());
+        try {
+            if (socksRepository.socksExistsByColorAndCottonPart(socks.getColor(), socks.getCottonPart())) {
+                socksRepository.reduceSocksByColorAndCottonPart(socks.getColor(),
+                        socks.getCottonPart(),
+                        socks.getCount());
+                log.info("Данные успешно обновлены (уменьшено количество носков)");
+            } else {
+                throw new SocksNotFoundException(socks.getColor(), socks.getCottonPart());
+            }
+        } catch (SocksNotFoundException e) {
+            log.error("Ошибка: носки не найдены. Цвет: {}, % хлопка: {}", socks.getColor(), socks.getCottonPart());
+            // Дополнительная обработка, например, повторный бросок или возврат значения
+        } catch (Exception e) {
+            log.error("Произошла непредвиденная ошибка: " + e.getMessage());
+            // Обработка других возможных исключений
         }
     }
 
@@ -59,23 +66,34 @@ public class SocksService {
                                    Integer cottonPart,
                                    String comparison) throws InvalidInputException {
         log.info("Вход в метод getCountOfSocks класса SocksService. Начинаем проверку наличия данной строки в БД");
-        if (socksRepository.socksExistByColor(color)) {
-            log.info("Строка с искомым цветом найдена, выполнение логики");
-            if (comparison.equals(">")) {
-                int countSocksByColor = socksRepository.findCountOfSocksMoreThan(color, cottonPart);
-                log.info("Количество носков цвета {}, с процентным содержанием хлопка больше {}%, равно {} ", color, cottonPart, countSocksByColor);
-                return countSocksByColor;
-            } else if (comparison.equals("<")) {
-                int countSocksByColor = socksRepository.findCountOfSocksLessThan(color, cottonPart);
-                log.info("Количество носков цвета {}, с процентным содержанием хлопка меньше {}%, равно {} ", color, cottonPart, countSocksByColor);
-                return countSocksByColor;
-            } else if (comparison.equals("=") && (socksRepository.socksExistsByColorAndCottonPart(color, cottonPart))) {
-                return socksRepository.findCountOfCocksByColorAndCottonPart(color, cottonPart);
+
+        try {
+            if (socksRepository.socksExistByColor(color)) {
+                log.info("Строка с искомым цветом найдена, выполнение логики");
+
+                if (comparison.equals(">")) {
+                    int countSocksByColor = socksRepository.findCountOfSocksMoreThan(color, cottonPart);
+                    log.info("Количество носков цвета {}, с процентным содержанием хлопка больше {}%, равно {}", color, cottonPart, countSocksByColor);
+                    return countSocksByColor;
+                } else if (comparison.equals("<")) {
+                    int countSocksByColor = socksRepository.findCountOfSocksLessThan(color, cottonPart);
+                    log.info("Количество носков цвета {}, с процентным содержанием хлопка меньше {}%, равно {}", color, cottonPart, countSocksByColor);
+                    return countSocksByColor;
+                } else if (comparison.equals("=") && socksRepository.socksExistsByColorAndCottonPart(color, cottonPart)) {
+                    return socksRepository.findCountOfCocksByColorAndCottonPart(color, cottonPart);
+                } else {
+                    throw new SocksNotFoundException(color, cottonPart);
+                }
             } else {
-                throw new SocksNotFoundException(color, cottonPart);
+                throw new SocksNotFoundException(color);
             }
+        } catch (SocksNotFoundException e) {
+            log.error("Носки не найдены: {}", e.getMessage());
+            throw e; // Повторно выбрасываем исключение, если это необходимо
+        } catch (Exception e) {
+            log.error("Произошла непредвиденная ошибка: " + e.getMessage());
+            throw new InvalidInputException("Ошибка при обработке запроса", e);
         }
-        throw new SocksNotFoundException(color);
     }
 
 
